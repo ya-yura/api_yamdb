@@ -3,34 +3,53 @@ from django.db import models
 
 
 class Category(models.Model):
+    """Модель категорий произведений."""
     name = models.CharField(
         max_length=128,
         verbose_name="Наименование категории",
     )
 
-    slug = models.CharField(
+    slug = models.SlugField(
         unique=True,
     )
 
+    class Meta:
+        ordering = ('name', 'slug')
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+    def __str__(self):
+        return self.name
+
 
 class Genre(models.Model):
+    """Модель жанра произведений."""
     name = models.CharField(
         max_length=128,
         verbose_name="Наименование жанра",
     )
 
-    slug = models.CharField(
+    slug = models.SlugField(
         unique=True,
     )
 
+    class Meta:
+        ordering = ('name', 'slug')
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+    def __str__(self):
+        return self.name
+
 
 class Title(models.Model):
+    """Модель произведений."""
     name = models.CharField(
         max_length=256,
         verbose_name="Наименование произведения",
     )
 
-    year = models.CharField(
+    year = models.PositiveSmallIntegerField(
         default="",
         max_length=4,
         validators=[year_validator],
@@ -38,7 +57,6 @@ class Title(models.Model):
     )
 
     description = models.CharField(
-        max_length=256,
         blank=True,
         null=True,
         verbose_name='Описание произведения'
@@ -46,6 +64,7 @@ class Title(models.Model):
 
     genre = models.ManyToManyField(
         Genre,
+        through='Genre',
         related_name='titles',
         verbose_name='Жанр произведения',
     )
@@ -57,6 +76,14 @@ class Title(models.Model):
         null=True,
         verbose_name='Категория произведения'
     )
+
+    class Meta:
+        ordering = ('name', 'year', 'genre', 'category')
+        verbose_name = 'Произведение'
+        verbose_name_plural = 'Произведения'
+
+    def __str__(self):
+        return self.name
 
 
 class Review(models.Model):
