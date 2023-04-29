@@ -13,7 +13,6 @@ class User(AbstractUser):
         (MODERATOR, 'moderator'),
         (USER, 'user'),
     ]
-    username_validator = UsernameValidator()
     email = models.EmailField(
         verbose_name='Адрес электронной почты',
         max_length=settings.LIMIT_EMAIL,
@@ -23,9 +22,14 @@ class User(AbstractUser):
         max_length=settings.LIMIT_USERNAME,
         null=True,
         unique=True,
-        validators=[username_validator, username_not_me],
-
+        validators=[UsernameValidator(), username_not_me],
     )
+    first_name = models.CharField('Имя',
+                                  max_length=settings.LIMIT_USERNAME,
+                                  blank=True)
+    last_name = models.CharField('Фамилия',
+                                 max_length=settings.LIMIT_USERNAME,
+                                 blank=True)
     bio = models.TextField(
         verbose_name='О себе',
         null=True,
@@ -33,6 +37,24 @@ class User(AbstractUser):
     )
     role = models.CharField(
         verbose_name='Роль',
+        max_length=settings.LIMIT_ROLE,
         choices=ROLES,
         default=USER
     )
+
+    @property
+    def is_user(self):
+        return self.role == self.USER
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.is_superuser or self.role == self.ADMIN
+
+    class Meta:
+        ordering = ['-id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'

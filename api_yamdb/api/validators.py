@@ -9,6 +9,6 @@ class UsernameValidator(UnicodeUsernameValidator):
 
 def username_not_me(value):
     """Запрет использовать имя me."""
-    if value == 'me':
+    if value.lower() == 'me':
         raise ValidationError('Имя пользователя me запрещено.')
     return value

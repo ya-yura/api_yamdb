@@ -13,8 +13,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         required=True
     )
     email = serializers.EmailField(
-        max_length=254,
-        required=True
+        max_length=settings.LIMIT_EMAIL,
+        required=True,
     )
 
     def validate_username(self, value):
@@ -26,15 +26,32 @@ class RegistrationSerializer(serializers.ModelSerializer):
         fields = ('username', 'email')
         model = User
 
+    def validate_empty(self, data):
+        username = data.get('username')
+        email = data.get('email')
+        if not username:
+            raise serializers.ValidationError(
+                'Имя пользователя не может быть пустым'
+            )
+        if not email:
+            raise serializers.ValidationError(
+                'Email не может быть пустым'
+            )
+        return data
+
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.RegexField(
         max_length=settings.LIMIT_USERNAME,
         regex=r'^[\w.@+-]+\Z',
-        required=True,)
+        required=True)
     confirmation_code = serializers.CharField(
         max_length=settings.LIMIT_CODE,
         required=True)
+
+    class Meta:
+        fields = ('username', 'confirmation_code')
+        model = User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -42,7 +59,10 @@ class UserSerializer(serializers.ModelSerializer):
     username = serializers.RegexField(
         max_length=settings.LIMIT_USERNAME,
         regex=r'^[\w.@+-]+\Z',
-        required=True,)
+        required=True,
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ])
     email = serializers.EmailField(
         max_length=settings.LIMIT_EMAIL,
         validators=[
@@ -55,8 +75,32 @@ class UserSerializer(serializers.ModelSerializer):
                   'last_name', 'bio', 'role')
         model = User
 
+    def validate_empty(self, data):
+        username = data.get('username')
+        email = data.get('email')
+        if not username:
+            raise serializers.ValidationError(
+                'Имя пользователя не может быть пустым'
+            )
+        if not email:
+            raise serializers.ValidationError(
+                'Email не может быть пустым'
+            )
+        return data
+
 
 class UserEditSerializer(serializers.ModelSerializer):
+    username = serializers.RegexField(
+        max_length=settings.LIMIT_USERNAME,
+        regex=r'^[\w.@+-]+\Z',
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())])
+    email = serializers.EmailField(
+        max_length=settings.LIMIT_EMAIL,
+        validators=[
+            UniqueValidator(queryset=User.objects.all())
+        ])
+
     class Meta:
         fields = ('username', 'email', 'first_name',
                   'last_name', 'bio', 'role')
