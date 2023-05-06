@@ -11,6 +11,24 @@ from .serializers import (CategorySerializer, GenreSerializer,
                           CommentSerializer, ReviewSerializer)
 from .permissions import (IsAdminOrReadOnly, IsStaffOrAuthorOrReadOnly)
 
+from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from rest_framework import permissions, status, viewsets
+from rest_framework.filters import SearchFilter
+from rest_framework.decorators import permission_classes
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.decorators import action, api_view
+from django.db import IntegrityError
+from api.permissions import IsAdminOrSuperUser
+from api.serializers import RegistrationSerializer
+from api.serializers import TokenSerializer, UserSerializer
+from api.serializers import UserEditSerializer
+from reviews.models import User
+from rest_framework.pagination import PageNumberPagination
+
 
 class CategoriesViewSet():
     """Вьюсет категорий произведений."""
@@ -94,35 +112,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
-
-
-class UserViewSet():
-    pass
-
-
-class signup():
-    pass
-
-
-class token():
-    pass
-from django.conf import settings
-from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
-from rest_framework import permissions, status, viewsets
-from rest_framework.filters import SearchFilter
-from rest_framework.decorators import permission_classes
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.decorators import action, api_view
-from django.db import IntegrityError
-from api.permissions import IsAdminOrSuperUser
-from api.serializers import RegistrationSerializer
-from api.serializers import TokenSerializer, UserSerializer
-from api.serializers import UserEditSerializer
-from reviews.models import User
-from rest_framework.pagination import PageNumberPagination
 
 
 @api_view(['POST'])

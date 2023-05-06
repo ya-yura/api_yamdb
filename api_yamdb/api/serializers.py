@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from reviews.models import Category, Genre, Title, Genre, Review, Comment
+from reviews.models import Category, Genre, Title, Genre, Review, Comment, User
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from rest_framework.validators import UniqueValidator
+from django.conf import settings
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -107,11 +109,6 @@ class ReviewSerializer(serializers.ModelSerializer):
                 'Больше одного отзыва на title писать нельзя'
             )
         return data
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-
-from reviews.models import User
-from django.conf import settings
 
 
 class RegistrationSerializer(serializers.ModelSerializer):

@@ -2,8 +2,8 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (CategoriesViewSet, CommentViewSet, GenresViewSet,
-                    ReviewViewSet, TitleViewSet, UserViewSet, signup,
-                    token)
+                    ReviewViewSet, TitleViewSet, UserViewSet, registration,
+                    UserViewSet, get_jwt_token)
 
 app_name = 'api'
 
@@ -26,12 +26,9 @@ router.register(
 
 urlpatterns = [
     path('v1/', include(router.urls)),
-    path('v1/auth/token/', token, name='token'),
-    path('v1/auth/signup/', signup, name='signup'),
+    path('v1/auth/token/', get_jwt_token, name='token'),
+    path('v1/auth/signup/', registration, name='signup'),
 ]
-from django.urls import include, path
-from rest_framework import routers
-from api.views import registration, UserViewSet, get_jwt_token
 
 router_v1 = routers.DefaultRouter()
 router_v1.register(r'users', UserViewSet)
