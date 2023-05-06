@@ -1,7 +1,8 @@
 import os
 
-from tests.conftest import MANAGE_PATH, project_dir_content, root_dir_content
+from .conftest import MANAGE_PATH, project_dir_content, root_dir_content
 
+# проверяем, что в папки приложения api не находятся модели
 api_path = os.path.join(MANAGE_PATH, 'api')
 if 'api' in project_dir_content and os.path.isdir(api_path):
     api_dir_content = os.listdir(api_path)
@@ -20,7 +21,7 @@ assert filename in root_dir_content, (
     f'В корне проекта не найден файл `{filename}`'
 )
 
-with open(filename, 'r', errors='ignore') as f:
+with open(filename, 'r', encoding="utf-8") as f:
     file = f.read()
     assert file != default_md, (
         f'Не забудьте оформить `{filename}`'

@@ -4,19 +4,24 @@ info:
   version: ''
   description: |
     запросы к API начинаются с `/api/v1/`
+
     # Описание
     Проект **YaMDb** собирает отзывы пользователей на различные произведения.
+
     # Алгоритм регистрации пользователей
     1. Пользователь отправляет POST-запрос на добавление нового пользователя с параметрами `email` и `username` на эндпоинт `/api/v1/auth/signup/`.
     2. **YaMDB** отправляет письмо с кодом подтверждения (`confirmation_code`) на адрес  `email`.
     3. Пользователь отправляет POST-запрос с параметрами `username` и `confirmation_code` на эндпоинт `/api/v1/auth/token/`, в ответе на запрос ему приходит `token` (JWT-токен).
     4. При желании пользователь отправляет PATCH-запрос на эндпоинт `/api/v1/users/me/` и заполняет поля в своём профайле (описание полей — в документации).
+
     # Пользовательские роли
     - **Аноним** — может просматривать описания произведений, читать отзывы и комментарии.
     - **Аутентифицированный пользователь** (`user`) — может, как и **Аноним**, читать всё, дополнительно он может публиковать отзывы и ставить оценку произведениям (фильмам/книгам/песенкам), может комментировать чужие отзывы; может редактировать и удалять **свои** отзывы и комментарии. Эта роль присваивается по умолчанию каждому новому пользователю.
     - **Модератор** (`moderator`) — те же права, что и у **Аутентифицированного пользователя** плюс право удалять **любые** отзывы и комментарии.
     - **Администратор** (`admin`) — полные права на управление всем контентом проекта. Может создавать и удалять произведения, категории и жанры. Может назначать роли пользователям. 
     - **Суперюзер Django** — обладет правами администратора (`admin`)
+
+
 servers:
   - url: /api/v1/
 
@@ -44,8 +49,11 @@ paths:
       operationId: Регистрация нового пользователя
       description: |
         Получить код подтверждения на переданный `email`.
+
         Права доступа: **Доступно без токена.**
+
         Использовать имя 'me' в качестве `username` запрещено.
+
         Поля `email` и `username` должны быть уникальными.
       parameters: []
       requestBody:
@@ -58,12 +66,8 @@ paths:
               properties:
                 email:
                   type: string
-                  format: email
-                  maxLength: 254
                 username:
                   type: string
-                  pattern: ^[\w.@+-]+\z
-                  maxLength: 150
       responses:
         200:
           content:
@@ -74,6 +78,9 @@ paths:
                     type: string
                   username:
                     type: string
+                required:
+                - email
+                - username
           description: 'Удачное выполнение запроса'
         '400':
           content:
@@ -88,6 +95,7 @@ paths:
       operationId: Получение JWT-токена
       description: |
         Получение JWT-токена в обмен на username и confirmation code.
+
         Права доступа: **Доступно без токена.**
       requestBody:
         content:
@@ -99,8 +107,6 @@ paths:
               properties:
                 username:
                   type: string
-                  pattern: ^[\w.@+-]+\z
-                  maxLength: 150
                 confirmation_code:
                   type: string
                   writeOnly: true
@@ -127,6 +133,7 @@ paths:
       operationId: Получение списка всех категорий
       description: |
         Получить список всех категорий
+
         Права доступа: **Доступно без токена**
       parameters:
       - name: search
@@ -140,25 +147,29 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                  previous:
-                    type: string
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Category'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    next:
+                      type: string
+                    previous:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Category'
     post:
       tags:
         - CATEGORIES
       operationId: Добавление новой категории
       description: |
         Создать категорию.
+
         Права доступа: **Администратор.**
+
         Поле `slug` каждой категории должно быть уникальным.
       requestBody:
         content:
@@ -171,7 +182,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CategoryRead'
+                $ref: '#/components/schemas/Category'
         400:
           description: 'Отсутствует обязательное поле или оно некорректно'
           content:
@@ -192,6 +203,7 @@ paths:
       operationId: Удаление категории
       description: |
         Удалить категорию.
+
         Права доступа: **Администратор.**
       parameters:
       - name: slug
@@ -220,6 +232,7 @@ paths:
       operationId: Получение списка всех жанров
       description: |
         Получить список всех жанров.
+
         Права доступа: **Доступно без токена**
       parameters:
       - name: search
@@ -233,38 +246,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                  previous:
-                    type: string
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Genre'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    next:
+                      type: string
+                    previous:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Genre'
     post:
       tags:
         - GENRES
       operationId: Добавление жанра
       description: |
         Добавить жанр.
+
         Права доступа: **Администратор**.
+
         Поле `slug` каждого жанра должно быть уникальным.
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Genre'
       responses:
         201:
           description: Удачное выполнение запроса
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GenreRead'
+                $ref: '#/components/schemas/Genre'
         400:
           description: 'Отсутствует обязательное поле или оно некорректно'
           content:
@@ -286,6 +298,7 @@ paths:
       operationId: Удаление жанра
       description: |
         Удалить жанр.
+
         Права доступа: **Администратор**.
       parameters:
       - name: slug
@@ -314,6 +327,7 @@ paths:
       operationId: Получение списка всех произведений
       description: |
         Получить список всех объектов.
+
         Права доступа: **Доступно без токена**
       parameters:
         - name: category
@@ -342,26 +356,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                  previous:
-                    type: string
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Title'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    next:
+                      type: string
+                    previous:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Title'
     post:
       tags:
         - TITLES
       operationId: Добавление произведения
       description: |
         Добавить новое произведение.
+
         Права доступа: **Администратор**.
+
         Нельзя добавлять произведения, которые еще не вышли (год выпуска не может быть больше текущего).
+
         При добавлении нового произведения требуется указать уже существующие категорию и жанр.
       parameters: []
       requestBody:
@@ -403,6 +422,8 @@ paths:
       operationId: Получение информации о произведении
       description: |
         Информация о произведении
+
+
         Права доступа: **Доступно без токена**
       responses:
         200:
@@ -419,6 +440,8 @@ paths:
       operationId: Частичное обновление информации о произведении
       description: |
         Обновить информацию о произведении
+
+
         Права доступа: **Администратор**
       requestBody:
         content:
@@ -447,6 +470,7 @@ paths:
       operationId: Удаление произведения
       description: |
         Удалить произведение.
+
         Права доступа: **Администратор**.
       responses:
         204:
@@ -475,6 +499,7 @@ paths:
       operationId: Получение списка всех отзывов
       description: |
         Получить список всех отзывов.
+
         Права доступа: **Доступно без токена**.
       responses:
         200:
@@ -482,18 +507,20 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                  previous:
-                    type: string
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Review'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    next:
+                      type: string
+                    previous:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Review'
         404:
           description: Произведение не найдено
     post:
@@ -502,6 +529,7 @@ paths:
       operationId: Добавление нового отзыва
       description: |
         Добавить новый отзыв. Пользователь может оставить только один отзыв на произведение.
+
         Права доступа: **Аутентифицированные пользователи.**
       requestBody:
         content:
@@ -548,6 +576,7 @@ paths:
       operationId: Полуение отзыва по id
       description: |
         Получить отзыв по id для указанного произведения.
+
         Права доступа: **Доступно без токена.**
       responses:
         200:
@@ -564,6 +593,7 @@ paths:
       operationId: Частичное обновление отзыва по id
       description: |
         Частично обновить отзыв по id.
+
         Права доступа: **Автор отзыва, модератор или администратор.**
       requestBody:
         content:
@@ -598,6 +628,7 @@ paths:
       operationId: Удаление отзыва по id
       description: |
         Удалить отзыв по id
+
         Права доступа: **Автор отзыва, модератор или администратор.**
       responses:
         204:
@@ -632,6 +663,7 @@ paths:
       operationId: Получение списка всех комментариев к отзыву
       description: |
         Получить список всех комментариев к отзыву по id
+
         Права доступа: **Доступно без токена.**
       responses:
         200:
@@ -639,18 +671,20 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                  previous:
-                    type: string
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Comment'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    next:
+                      type: string
+                    previous:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Comment'
         404:
           description: Не найдено произведение или отзыв
     post:
@@ -659,6 +693,7 @@ paths:
       operationId: Добавление комментария к отзыву
       description: |
         Добавить новый комментарий для отзыва.
+
         Права доступа: **Аутентифицированные пользователи.**
       requestBody:
         content:
@@ -712,6 +747,7 @@ paths:
       operationId: Получение комментария к отзыву
       description: |
         Получить комментарий для отзыва по id.
+
         Права доступа: **Доступно без токена.**
       responses:
         200:
@@ -728,6 +764,7 @@ paths:
       operationId: Частичное обновление комментария к отзыву
       description: |
         Частично обновить комментарий к отзыву по id.
+
         Права доступа: **Автор комментария, модератор или администратор**.
       requestBody:
         content:
@@ -762,6 +799,7 @@ paths:
       operationId: Удаление комментария к отзыву
       description: |
         Удалить комментарий к отзыву по id.
+
         Права доступа: **Автор комментария, модератор или администратор**.
       responses:
         204:
@@ -783,6 +821,7 @@ paths:
       operationId: Получение списка всех пользователей
       description: |
         Получить список всех пользователей.
+
         Права доступа: **Администратор**
       parameters:
       - name: search
@@ -796,18 +835,20 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                  previous:
-                    type: string
-                  results:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
+                type: array
+                items:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                    next:
+                      type: string
+                    previous:
+                      type: string
+                    results:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/User'
         401:
           description: Необходим JWT-токен
       security:
@@ -819,7 +860,9 @@ paths:
       operationId: Добавление пользователя
       description: |
         Добавить нового пользователя.
+
         Права доступа: **Администратор**
+
         Поля `email` и `username` должны быть уникальными.
       requestBody:
         content:
@@ -860,6 +903,7 @@ paths:
       operationId: Получение пользователя по username
       description: |
         Получить пользователя по username.
+
         Права доступа: **Администратор**
       responses:
         200:
@@ -883,7 +927,9 @@ paths:
       operationId: Изменение данных пользователя по username
       description: |
         Изменить данные пользователя по username.
+
         Права доступа: **Администратор.**
+
         Поля `email` и `username` должны быть уникальными.
       requestBody:
         content:
@@ -918,6 +964,7 @@ paths:
       operationId: Удаление пользователя по username
       description: |
         Удалить пользователя по username.
+
         Права доступа: **Администратор.**
       responses:
         204:
@@ -939,6 +986,7 @@ paths:
       operationId: Получение данных своей учетной записи
       description: |
         Получить данные своей учетной записи
+
         Права доступа: **Любой авторизованный пользователь**
       responses:
         200:
@@ -956,7 +1004,9 @@ paths:
       operationId: Изменение данных своей учетной записи
       description: |
         Изменить данные своей учетной записи
+
         Права доступа: **Любой авторизованный пользователь**
+
         Поля `email` и `username` должны быть уникальными.
       requestBody:
         content:
@@ -1020,6 +1070,8 @@ components:
     Title:
       title: Объект
       type: object
+      required:
+        - name
       properties:
         id:
           type: integer
@@ -1057,7 +1109,6 @@ components:
         name:
           type: string
           title: Название
-          maxLength: 256
         year:
           type: integer
           title: Год выпуска
@@ -1086,14 +1137,6 @@ components:
       required:
       - name
       - slug
-    
-    GenreRead:
-      type: object
-      properties:
-        name:
-          type: string
-        slug:
-          type: string
 
     Review:
       title: Отзыв
@@ -1211,14 +1254,6 @@ components:
       required:
       - name
       - slug
-
-    CategoryRead:
-      type: object
-      properties:
-        name:
-          type: string
-        slug:
-          type: string
 
   securitySchemes:
     jwt-token:
