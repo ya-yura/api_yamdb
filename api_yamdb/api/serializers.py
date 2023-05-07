@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueValidator
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django.conf import settings
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Genre, Title, Genre, Review, Comment, User
 

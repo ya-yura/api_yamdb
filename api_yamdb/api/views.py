@@ -3,27 +3,34 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets, filters
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action, api_view
-from django.db import IntegrityError
-from api.permissions import IsAdminOrSuperUser, IsAdminOrReadOnly
-from api.serializers import RegistrationSerializer
-from api.serializers import TokenSerializer, UserSerializer
-from api.serializers import UserEditSerializer
-from reviews.models import User
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import LimitOffsetPagination
+
+from django.db import IntegrityError
+
+from rest_framework.pagination import PageNumberPagination
+
+from django_filters.rest_framework import DjangoFilterBackend
 
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import LimitOffsetPagination
+from django.db import IntegrityError
 
-from reviews.models import Category, Genre, Review, Title
-from .serializers import (CategorySerializer, GenreSerializer,
-                          TitleCreateSerializer, TitleDisplaySerializer,
-                          CommentSerializer, ReviewSerializer)
+from api.serializers import (RegistrationSerializer,
+                             TokenSerializer, UserSerializer,
+                             UserEditSerializer, CategorySerializer,
+                             GenreSerializer, TitleCreateSerializer, 
+                             TitleDisplaySerializer, CommentSerializer, 
+                             ReviewSerializer
+                             )
+from reviews.models import Category, Genre, Review, Title, User
+
 from .permissions import (IsAdminOrReadOnly, IsStaffOrAuthorOrReadOnly)
 
 
