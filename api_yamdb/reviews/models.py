@@ -2,11 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from api.validators import UsernameValidator, username_not_me
 from django.conf import settings
-from django.contrib.auth import get_user_model
-from validate import year_validator
+from reviews.validate import year_validator
 from django.core.validators import MaxValueValidator, MinValueValidator
-
-User = get_user_model()
 
 
 class User(AbstractUser):
@@ -114,12 +111,11 @@ class Title(models.Model):
 
     year = models.PositiveSmallIntegerField(
         default="",
-        max_length=4,
         validators=[year_validator],
         verbose_name='Год произведения'
     )
 
-    description = models.CharField(
+    description = models.TextField(
         blank=True,
         null=True,
         verbose_name='Описание произведения'
@@ -127,7 +123,6 @@ class Title(models.Model):
 
     genre = models.ManyToManyField(
         Genre,
-        through='Genre',
         related_name='titles',
         verbose_name='Жанр произведения',
     )
@@ -141,7 +136,7 @@ class Title(models.Model):
     )
 
     class Meta:
-        ordering = ('name', 'year', 'genre', 'category')
+        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 
