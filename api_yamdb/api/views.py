@@ -8,12 +8,19 @@ from rest_framework.decorators import permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action, api_view
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import LimitOffsetPagination
+
+from django.db import IntegrityError
+
+from rest_framework.pagination import PageNumberPagination
+
+from django_filters.rest_framework import DjangoFilterBackend
+
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import LimitOffsetPagination
 from django.db import IntegrityError
-from api.permissions import IsAdminOrSuperUser, IsAdminOrReadOnly
-from rest_framework.pagination import PageNumberPagination
 
 from api.serializers import (RegistrationSerializer,
                              TokenSerializer, UserSerializer,
@@ -23,6 +30,7 @@ from api.serializers import (RegistrationSerializer,
                              ReviewSerializer
                              )
 from reviews.models import Category, Genre, Review, Title, User
+
 from .permissions import (IsAdminOrReadOnly, IsStaffOrAuthorOrReadOnly)
 
 

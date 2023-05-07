@@ -3,7 +3,7 @@ from rest_framework import routers
 from api.views import registration, UserViewSet, get_jwt_token
 from .views import (CategoriesViewSet, CommentViewSet, GenresViewSet,
                     ReviewViewSet, TitleViewSet, UserViewSet, signup,
-                    token)
+                    token, registration, UserViewSet, get_jwt_token)
 
 app_name = 'api'
 
