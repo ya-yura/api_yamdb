@@ -97,5 +97,3 @@ python manage.py runserver
 
 - Serezha Mashokha - @SerezhaM (разработчик)
 Категории (Categories), жанры (Genres) и произведения (Titles): модели, view и эндпойнты для них.
-
-
