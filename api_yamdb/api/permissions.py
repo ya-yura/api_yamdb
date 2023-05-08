@@ -28,3 +28,10 @@ class IsStaffOrAuthorOrReadOnly(permissions.BasePermission):
                 or request.user.is_moderator
                 or request.user == obj.author
                 )
+
+
+class IsAdminOrSuperUser(permissions.BasePermission):
+    """Разрешение для админа или суперюзера."""
+    def has_permission(self, request, view):
+        return (request.user.is_authenticated
+                and request.user.is_admin)
