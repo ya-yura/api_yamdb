@@ -42,7 +42,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 'Email не может быть пустым'
             )
         return data
-    
+
     def create(self, validated_data):
         username = validated_data['username']
         email = validated_data['email']
