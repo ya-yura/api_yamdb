@@ -132,7 +132,7 @@ SIMPLE_JWT = {
 
 DEFAULT_FROM_EMAIL = 'support@yamdb.ru'
 
-AUTH_USER_MODEL = 'reviews.User'
+AUTH_USER_MODEL = 'users.User'
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 
