@@ -1,6 +1,4 @@
-from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status, viewsets, filters
 from rest_framework.filters import SearchFilter
@@ -10,16 +8,8 @@ from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action, api_view
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.pagination import LimitOffsetPagination
-
-from django.db import IntegrityError
-
-from rest_framework.pagination import PageNumberPagination
-
-from django_filters.rest_framework import DjangoFilterBackend
-
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.pagination import LimitOffsetPagination
 from django.db import IntegrityError
 
 from api.serializers import (RegistrationSerializer,
@@ -29,12 +19,14 @@ from api.serializers import (RegistrationSerializer,
                              TitleDisplaySerializer, CommentSerializer,
                              ReviewSerializer
                              )
-from reviews.models import Category, Genre, Review, Title, User, Comment
+from reviews.models import Category, Genre, Review, Title, Comment
+from users.models import User
 
 from api.mixins import DestroyCreateListMixins
 from api.filters import TitlesFilter
-from .permissions import (IsAdminOrReadOnly, IsStaffOrAuthorOrReadOnly)
-from .permissions import IsAdminOrSuperUser
+from .permissions import (IsAdminOrReadOnly, IsStaffOrAuthorOrReadOnly,
+                          IsAdminOrSuperUser, IsAuthenticatedOrReadOnly
+                          )
 
 
 @api_view(['POST'])
@@ -44,19 +36,12 @@ def registration(request):
     serializer = RegistrationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
-        username = serializer.validated_data.get('username')
-        email = serializer.validated_data.get('email')
-        user, _ = User.objects.get_or_create(username=username, email=email)
+        serializer.save()
     except IntegrityError:
-        return Response('Это имя или email уже занято',
-                        status.HTTP_400_BAD_REQUEST)
-    confirmation_code = default_token_generator.make_token(user)
-    send_mail(
-        subject='Регистрация на сайте YaMDb',
-        message=f'Ваш код подтверждения: {confirmation_code}',
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email]
-    )
+        return Response(
+            'Это имя или email уже занято',
+            status=status.HTTP_400_BAD_REQUEST
+        )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -83,32 +68,28 @@ class UserViewSet(viewsets.ModelViewSet):
     filter_backends = (SearchFilter,)
     lookup_field = 'username'
     search_fields = ('username',)
-    permission_classes = (IsAdminOrSuperUser,)
+    permission_classes = (IsAdminOrSuperUser, IsAuthenticatedOrReadOnly)
     pagination_class = PageNumberPagination
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     @action(
-        methods=['get', 'patch', ],
+        methods=['get', 'patch'],
         detail=False,
-        url_path='me',
-        permission_classes=[permissions.IsAuthenticated],)
+        url_path='me')
     def me_info(self, request):
         user = request.user
-        if user.is_authenticated:
-            if request.method == "GET":
-                serializer = UserSerializer(
-                    user, data=request.data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            if request.method == "PATCH":
-                serializer = UserEditSerializer(
-                    user, data=request.data, partial=True)
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-        return Response('Вы не авторизованы',
-                        status=status.HTTP_401_UNAUTHORIZED)
+        if request.method == "GET":
+            serializer = UserSerializer(
+                user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == "PATCH":
+            serializer = UserEditSerializer(
+                user, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class CategoriesViewSet(DestroyCreateListMixins):
@@ -164,7 +145,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ['list', 'retrieve']:
             return TitleDisplaySerializer
         else:
-            self.action in ['create', 'update', 'partial_update']
             return TitleCreateSerializer
 
 

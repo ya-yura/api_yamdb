@@ -35,3 +35,15 @@ class IsAdminOrSuperUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return (request.user.is_authenticated
                 and request.user.is_admin)
+
+
+class IsAuthenticatedOrReadOnly(permissions.BasePermission):
+    """
+    Разрешает доступ только аутентифицированным пользователям,
+    для чтения разрешает доступ всем.
+    """
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True  # Разрешить доступ для методов только чтения
+        return request.user and request.user.is_authenticated
