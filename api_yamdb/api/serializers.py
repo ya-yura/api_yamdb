@@ -44,14 +44,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
             )
         return data
 
-    def create(self, validated_data):
+    def validate(self, validated_data):
         username = validated_data['username']
         email = validated_data['email']
         try:
-            user = User.objects.create(username=username, email=email)
+            user, _ = User.objects.get_or_create(username=username,
+                                                 email=email)
         except IntegrityError:
             raise serializers.ValidationError('Это имя или email уже занято')
-        return user
+        return validated_data
 
 
 class TokenSerializer(serializers.Serializer):
