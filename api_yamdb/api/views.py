@@ -10,7 +10,8 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.pagination import LimitOffsetPagination
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db import IntegrityError
+from django.conf import settings
+from django.core.mail import send_mail
 
 from api.serializers import (RegistrationSerializer,
                              TokenSerializer, UserSerializer,
@@ -35,13 +36,18 @@ def registration(request):
     """Регистрация пользователя"""
     serializer = RegistrationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    try:
-        serializer.save()
-    except IntegrityError:
-        return Response(
-            'Это имя или email уже занято',
-            status=status.HTTP_400_BAD_REQUEST
-        )
+    username = serializer.data['username']
+    email = serializer.data['email']
+    user, _ = User.objects.get_or_create(
+        username=username,
+        email=email)
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        subject='Регистрация на сайте YaMDb',
+        message=f'Ваш код подтверждения: {confirmation_code}',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email]
+    )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -75,7 +81,8 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         methods=['get', 'patch'],
         detail=False,
-        url_path='me')
+        url_path='me',
+        permission_classes=[permissions.IsAuthenticated],)
     def me_info(self, request):
         user = request.user
         if request.method == "GET":
